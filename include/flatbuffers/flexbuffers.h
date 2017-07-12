@@ -355,6 +355,7 @@ class Reference {
                                 type_ == TYPE_INDIRECT_FLOAT; }
   bool IsNumeric() const { return IsIntOrUint() || IsFloat(); }
   bool IsString() const { return type_ == TYPE_STRING; }
+  bool IsBlob() const { return type_ == TYPE_BLOB; }
   bool IsKey() const { return type_ == TYPE_KEY; }
   bool IsVector() const { return type_ == TYPE_VECTOR || type_ == TYPE_MAP; }
   bool IsMap() const { return type_ == TYPE_MAP; }

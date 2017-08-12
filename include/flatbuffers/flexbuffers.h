@@ -77,16 +77,17 @@ enum Type {
   TYPE_VECTOR_FLOAT4 = 24,
   TYPE_BLOB = 25,
   TYPE_BOOL = 26,
+  TYPE_VECTOR_BOOL = 27,
 };
 
 inline bool IsInline(Type t) { return t <= TYPE_FLOAT || t == TYPE_BOOL; }
 
 inline bool IsTypedVectorElementType(Type t) {
-  return t >= TYPE_INT && t <= TYPE_STRING;
+  return (t >= TYPE_INT && t <= TYPE_STRING) || t == TYPE_BOOL;
 }
 
 inline bool IsTypedVector(Type t) {
-  return t >= TYPE_VECTOR_INT && t <= TYPE_VECTOR_STRING;
+  return (t >= TYPE_VECTOR_INT && t <= TYPE_VECTOR_STRING) || t == TYPE_VECTOR_BOOL;
 }
 
 inline bool IsFixedTypedVector(Type t) {
@@ -95,6 +96,9 @@ inline bool IsFixedTypedVector(Type t) {
 
 inline Type ToTypedVector(Type t, size_t fixed_len = 0) {
   assert(IsTypedVectorElementType(t));
+  if (t == TYPE_BOOL) {
+    return TYPE_VECTOR_BOOL;
+  }
   switch (fixed_len) {
     case 0: return static_cast<Type>(t - TYPE_INT + TYPE_VECTOR_INT);
     case 2: return static_cast<Type>(t - TYPE_INT + TYPE_VECTOR_INT2);
@@ -106,6 +110,9 @@ inline Type ToTypedVector(Type t, size_t fixed_len = 0) {
 
 inline Type ToTypedVectorElementType(Type t) {
   assert(IsTypedVector(t));
+  if (t == TYPE_VECTOR_BOOL) {
+    return TYPE_BOOL;
+  }
   return static_cast<Type>(t - TYPE_VECTOR_INT + TYPE_INT);
 }
 
@@ -1240,7 +1247,8 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     assert(flatbuffers::is_scalar<T>::value);
     return flatbuffers::is_floating_point<T>::value
         ? TYPE_FLOAT
-        : (flatbuffers::is_unsigned<T>::value ? TYPE_UINT : TYPE_INT);
+        : flatbuffers::is_same<T, bool>::value ? TYPE_BOOL
+            : (flatbuffers::is_unsigned<T>::value ? TYPE_UINT : TYPE_INT);
   }
 
   struct Value {
